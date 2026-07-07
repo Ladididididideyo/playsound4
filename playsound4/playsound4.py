@@ -170,13 +170,13 @@ class Alsa(SoundBackend):
                 sink_output = subprocess.check_output(["pactl", "list", "sink-inputs"]).decode()
                 
                 matches = re.findall(r"Sink Input #(\d+).*?application.process.id = \"{}\"".format(aplay_process.pid), sink_output, re.DOTALL)
-                if matches:
-                    sink_input_id = matches[0]
-                    
-                    subprocess.run(["pactl", "set-sink-input-volume", sink_input_id, f"{volume}%"])
-                    return aplay_process
+                
                 try:
-                    
+                    if matches:
+                        sink_input_id = matches[0]
+                        
+                        subprocess.run(["pactl", "set-sink-input-volume", sink_input_id, f"{volume}%"])
+                        return aplay_process
                 except Exception as exception:
                     print(f"Exception occured when trying to change a .wav file's volume using ALSA: {e}")
                     return aplay_process
