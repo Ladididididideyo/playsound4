@@ -142,7 +142,7 @@ class AppkitPopen:
         self._nssound: Any = NSSound.alloc().initWithContentsOfURL_byReference_(nsurl, True)
         self._nssound.retain()
         if volume is not None:
-            self._nssound.volume: float = float(volume) / 100
+            self._nssound.volume = float(volume) / 100
         self._start_time: float = time.time()
 
         self._nssound.play()
