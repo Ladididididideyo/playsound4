@@ -1,8 +1,8 @@
 import os
 import time
 
-from playsound3 import AVAILABLE_BACKENDS, playsound
-from playsound3.playsound3 import _prepare_path
+from playsound4 import AVAILABLE_BACKENDS, playsound
+from playsound4.playsound4 import _prepare_path
 
 loc_mp3_3s = "tests/sounds/sample3s.mp3"
 loc_flc_3s = "tests/sounds/sample3s.flac"

@@ -1,6 +1,6 @@
 import time
 
-from playsound3 import AVAILABLE_BACKENDS, playsound
+from playsound4 import AVAILABLE_BACKENDS, playsound
 
 wav = "tests/sounds/звук 音 聲音.wav"
 

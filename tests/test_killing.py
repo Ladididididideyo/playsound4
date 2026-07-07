@@ -7,8 +7,8 @@ import typing as t
 
 import pytest
 
-from playsound3 import AVAILABLE_BACKENDS
-from playsound3.playsound3 import _prepare_path
+from playsound4 import AVAILABLE_BACKENDS
+from playsound4.playsound4 import _prepare_path
 
 loc_mp3_3s = "tests/sounds/sample3s.mp3"
 loc_flc_3s = "tests/sounds/sample3s.flac"
@@ -61,7 +61,7 @@ def list_tagged_player_pids(tag: str) -> t.List[int]:
 
 HELPER_CODE = """
 import os, sys, time
-from playsound3 import playsound
+from playsound4 import playsound
 
 sound = playsound({path!r}, block=False, backend={backend!r})
 time.sleep(10)
