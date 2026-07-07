@@ -20,6 +20,7 @@ from playsound4 import backends
 logger = logging.getLogger(__name__)
 WAIT_TIME: float = 0.02
 
+
 class PlaysoundException(Exception):
     pass
 
@@ -140,11 +141,9 @@ class Gstreamer(SoundBackend):
 
     def play(self, sound: str, volume: int | None = None) -> subprocess.Popen[str]:
         if volume is not None:
-            return run_as_subprocess(["gst-play-1.0",
-            "--volume",
-            f"{float(volume)/100}",
-            "--no-interactive", 
-            "--quiet", sound])
+            return run_as_subprocess(
+                ["gst-play-1.0", "--volume", f"{float(volume) / 100}", "--no-interactive", "--quiet", sound]
+            )
         return run_as_subprocess(["gst-play-1.0", "--no-interactive", "--quiet", sound])
 
 
@@ -175,26 +174,23 @@ class Alsa(SoundBackend):
                 regex_template = r"Sink Input #(\d+).*?application.process.id = \"{}\""
                 pattern = regex_template.format(aplay_process.pid)
                 matches = re.findall(pattern, sink_output, re.DOTALL)
-                
+
                 try:
                     if matches:
                         sink_input_id = matches[0]
-                        
+
                         subprocess.run(["pactl", "set-sink-input-volume", sink_input_id, f"{volume}%"])
                         return aplay_process
                 except Exception as exception:
                     print(f"Exception occured when trying to change a .wav file's volume using ALSA: {exception}")
                     return aplay_process
-            
+
             return aplay_process
         elif suffix == ".mp3":
             if volume is not None:
-                run_as_subprocess(["mpg123",
-                "-q",
-                "-f",
-                f"{int(float(volume) * (32768 / 100))}", 
-                sound], 
-                stdin=self.pty_master)
+                run_as_subprocess(
+                    ["mpg123", "-q", "-f", f"{int(float(volume) * (32768 / 100))}", sound], stdin=self.pty_master
+                )
             return run_as_subprocess(["mpg123", "-q", sound], stdin=self.pty_master)
         else:
             raise PlaysoundException(f"ALSA does not support for {suffix} files.")
@@ -212,14 +208,9 @@ class Ffplay(SoundBackend):
 
     def play(self, sound: str, volume: int | None = None) -> subprocess.Popen[str]:
         if volume is not None:
-            return run_as_subprocess(["ffplay",
-            "-nodisp",
-            "-autoexit",
-            "-loglevel",
-            "quiet",
-            "-volume",
-            f"{volume}",
-            sound])
+            return run_as_subprocess(
+                ["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", "-volume", f"{volume}", sound]
+            )
         return run_as_subprocess(["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", sound])
 
 
@@ -270,10 +261,7 @@ class Afplay(SoundBackend):
 
     def play(self, sound: str, volume: int | None = None) -> subprocess.Popen[str]:
         if volume is not None:
-            return run_as_subprocess(["afplay",
-            "-v",
-            f"{float(volume)/100}",
-            sound])
+            return run_as_subprocess(["afplay", "-v", f"{float(volume) / 100}", sound])
         return run_as_subprocess(["afplay", sound])
 
 
@@ -380,7 +368,7 @@ def playsound(
         raise PlaysoundException(_NO_BACKEND_MESSAGE)
     if volume is not None and not (0 <= volume <= 100):
         raise ValueError("Volume is out of bounds")
-        
+
     if isinstance(backend, str):
         if backend in _BACKEND_MAP:
             backend_obj = _BACKEND_MAP[backend]

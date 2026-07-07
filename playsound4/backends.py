@@ -17,7 +17,14 @@ class WmplayerPopen:
 
     def __init__(self, sound: str, volume: int | None = None):
         self._playing: bool = True
-        self.thread: Thread = Thread(target=self._play, args=(sound, volume,), daemon=True)
+        self.thread: Thread = Thread(
+            target=self._play,
+            args=(
+                sound,
+                volume,
+            ),
+            daemon=True,
+        )
         self.thread.start()
 
     def _play(self, sound: str, volume: int | None = None) -> None:
@@ -35,7 +42,7 @@ class WmplayerPopen:
         if volume is not None:
             wmp.settings.Volume = volume
         wmp.settings.autoStart = True  # Ensure playback starts automatically
-        
+
         # Set the URL to your MP3 file
         wmp.URL = sound
         wmp.controls.play()  # Start playback
@@ -65,7 +72,14 @@ class WinmmPopen:
     def __init__(self, sound: str, volume: int | None = None):
         self._playing: bool = True
         self.alias: str | None = None
-        self.thread: Thread = Thread(target=self._play, args=(sound, volume,), daemon=True)
+        self.thread: Thread = Thread(
+            target=self._play,
+            args=(
+                sound,
+                volume,
+            ),
+            daemon=True,
+        )
         self.thread.start()
 
     def _send_winmm_mci_command(self, command: str) -> str:
@@ -89,7 +103,7 @@ class WinmmPopen:
         self.alias = str(uuid.uuid4())
         self._send_winmm_mci_command(f'open "{sound}" type mpegvideo alias {self.alias}')
         if volume is not None:
-            self._send_winmm_mci_command(f'setaudio {self.alias} volume to {volume * 10}')
+            self._send_winmm_mci_command(f"setaudio {self.alias} volume to {volume * 10}")
         self._send_winmm_mci_command(f"play {self.alias}")
 
         while self._playing:
@@ -130,7 +144,7 @@ class AppkitPopen:
         if volume is not None:
             self._nssound.volume: float = float(volume) / 100
         self._start_time: float = time.time()
-        
+
         self._nssound.play()
         self._duration: float = self._nssound.duration()
 
