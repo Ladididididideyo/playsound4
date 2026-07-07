@@ -36,10 +36,13 @@ from playsound4 import playsound
 playsound("/path/to/sound/file.mp3")
 
 # or play sounds from the internet.
-playsound("http://url/to/sound/file.mp3", volume=50)
+playsound("http://url/to/sound/file.mp3")
 
 # You can play sounds in the background
 sound = playsound("/path/to/sound/file.mp3", block=False)
+
+# You can play sounds at different volumes
+sound = playsound("/path/to/sound/file.mp3", volume=50)
 
 # and check if they are still playing
 if sound.is_alive():
