@@ -172,8 +172,9 @@ class Alsa(SoundBackend):
             if volume is not None:
                 time.sleep(WAIT_TIME)
                 sink_output = subprocess.check_output(["pactl", "list", "sink-inputs"]).decode()
-                
-                matches = re.findall(r"Sink Input #(\d+).*?application.process.id = \"{}\"".format(aplay_process.pid), sink_output, re.DOTALL)
+                regex_template = r"Sink Input #(\d+).*?application.process.id = \"{}\""
+                pattern = regex_template.format(aplay_process.pid)
+                matches = re.findall(pattern, sink_output, re.DOTALL)
                 
                 try:
                     if matches:
