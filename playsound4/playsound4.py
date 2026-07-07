@@ -211,7 +211,7 @@ class Ffplay(SoundBackend):
             return False
 
     def play(self, sound: str, volume: int | None = None) -> subprocess.Popen[str]:
-        if volume is Not None:
+        if volume is not None:
             return run_as_subprocess(["ffplay",
             "-nodisp",
             "-autoexit",
