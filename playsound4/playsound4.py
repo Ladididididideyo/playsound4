@@ -3,20 +3,22 @@ from __future__ import annotations
 import atexit
 import logging
 import os
+import re
 import shutil
 import signal
 import subprocess
 import tempfile
+import time
 import urllib.request
 from abc import ABC, abstractmethod
 from importlib.util import find_spec
 from pathlib import Path
 from typing import Any, Protocol
 
-from playsound3 import backends
+from playsound4 import backends
 
 logger = logging.getLogger(__name__)
-
+WAIT_TIME: float = 0.02
 
 class PlaysoundException(Exception):
     pass
@@ -43,7 +45,7 @@ def _prepare_path(sound: str | Path) -> str:
         # To play file from URL, we download the file first to a temporary location and cache it
         if sound not in _DOWNLOAD_CACHE:
             sound_suffix = Path(sound).suffix
-            with tempfile.NamedTemporaryFile(delete=False, prefix="playsound3-", suffix=sound_suffix) as f:
+            with tempfile.NamedTemporaryFile(delete=False, prefix="playsound4-", suffix=sound_suffix) as f:
                 _download_sound_from_web(sound, Path(f.name))
                 _DOWNLOAD_CACHE[sound] = f.name
         sound = _DOWNLOAD_CACHE[sound]
@@ -77,7 +79,7 @@ class SoundBackend(ABC):
         raise NotImplementedError("check() must be implemented.")
 
     @abstractmethod
-    def play(self, sound: str) -> PopenLike:
+    def play(self, sound: str, volume: int | None) -> PopenLike:
         raise NotImplementedError("play() must be implemented.")
 
 
@@ -136,7 +138,9 @@ class Gstreamer(SoundBackend):
         except FileNotFoundError:
             return False
 
-    def play(self, sound: str) -> subprocess.Popen[str]:
+    def play(self, sound: str, volume: int | None = None) -> subprocess.Popen[str]:
+        if volume is not None:
+            return run_as_subprocess(["gst-play-1.0", f"--volume {float(volume)/100}", "--no-interactive", "--quiet", sound])
         return run_as_subprocess(["gst-play-1.0", "--no-interactive", "--quiet", sound])
 
 
@@ -153,15 +157,34 @@ class Alsa(SoundBackend):
         except FileNotFoundError:
             return False
 
-    def play(self, sound: str) -> subprocess.Popen[str]:
+    def play(self, sound: str, volume: int | None = None) -> subprocess.Popen[str]:
         suffix = Path(sound).suffix
 
         if self.pty_master is None:
             self.pty_master, _ = os.openpty()
 
         if suffix == ".wav":
-            return run_as_subprocess(["aplay", "--quiet", sound])
+            aplay_process = run_as_subprocess(["aplay", "--quiet", sound])
+            if volume is not None:
+                time.sleep(WAIT_TIME)
+                sink_output = subprocess.check_output(["pactl", "list", "sink-inputs"]).decode()
+                
+                matches = re.findall(r"Sink Input #(\d+).*?application.process.id = \"{}\"".format(aplay_process.pid), sink_output, re.DOTALL)
+                if matches:
+                    sink_input_id = matches[0]
+                    
+                    subprocess.run(["pactl", "set-sink-input-volume", sink_input_id, f"{volume}%"])
+                    return aplay_process
+                try:
+                    
+                except Exception as exception:
+                    print(f"Exception occured when trying to change a .wav file's volume using ALSA: {e}")
+                    return aplay_process
+            
+            return aplay_process
         elif suffix == ".mp3":
+            if volume is not None:
+                run_as_subprocess(["mpg123", "-q", f"-f {int(float(volume) * (32768 / 100))}", sound], stdin=self.pty_master)
             return run_as_subprocess(["mpg123", "-q", sound], stdin=self.pty_master)
         else:
             raise PlaysoundException(f"ALSA does not support for {suffix} files.")
@@ -177,7 +200,9 @@ class Ffplay(SoundBackend):
         except (FileNotFoundError, subprocess.CalledProcessError):
             return False
 
-    def play(self, sound: str) -> subprocess.Popen[str]:
+    def play(self, sound: str, volume: int | None = None) -> subprocess.Popen[str]:
+        if volume is Not None:
+            return run_as_subprocess(["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", f"-volume {volume}", sound])
         return run_as_subprocess(["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", sound])
 
 
@@ -198,8 +223,8 @@ class Wmplayer(SoundBackend):
             # pywintypes.com_error can be raised, which inherits directly from Exception
             return False
 
-    def play(self, sound: str) -> backends.WmplayerPopen:
-        return backends.WmplayerPopen(sound)
+    def play(self, sound: str, volume: int | None = None) -> backends.WmplayerPopen:
+        return backends.WmplayerPopen(sound, volume)
 
 
 class Winmm(SoundBackend):
@@ -214,8 +239,8 @@ class Winmm(SoundBackend):
         except (ImportError, FileNotFoundError, AttributeError):
             return False
 
-    def play(self, sound: str) -> backends.WinmmPopen:
-        return backends.WinmmPopen(sound)
+    def play(self, sound: str, volume: int | None = None) -> backends.WinmmPopen:
+        return backends.WinmmPopen(sound, volume)
 
 
 class Afplay(SoundBackend):
@@ -226,7 +251,9 @@ class Afplay(SoundBackend):
         # So we must use shutil to test if afplay exists
         return shutil.which("afplay") is not None
 
-    def play(self, sound: str) -> subprocess.Popen[str]:
+    def play(self, sound: str, volume: int | None = None) -> subprocess.Popen[str]:
+        if volume is not None:
+            return run_as_subprocess(["afplay", f"-v {float(volume)/100}", sound])
         return run_as_subprocess(["afplay", sound])
 
 
@@ -242,8 +269,8 @@ class Appkit(SoundBackend):
         except ImportError:
             return False
 
-    def play(self, sound: str) -> backends.AppkitPopen:
-        return backends.AppkitPopen(sound)
+    def play(self, sound: str, volume: int | None = None) -> backends.AppkitPopen:
+        return backends.AppkitPopen(sound, volume)
 
 
 ################
@@ -254,9 +281,9 @@ _NO_BACKEND_MESSAGE = "No supported audio backends on this system!"
 
 
 def _auto_select_backend() -> str | None:
-    if "PLAYSOUND3_BACKEND" in os.environ:
+    if "PLAYSOUND4_BACKEND" in os.environ:
         # Allow users to override the automatic backend choice
-        return os.environ["PLAYSOUND3_BACKEND"]
+        return os.environ["PLAYSOUND4_BACKEND"]
 
     for backend in _BACKEND_PREFERENCE:
         if backend in AVAILABLE_BACKENDS:
@@ -277,12 +304,13 @@ class Sound:
     def __init__(
         self,
         name: str,
+        volume: int | None,
         block: bool,
         backend: SoundBackend,
     ) -> None:
         """Initialize the player and begin playing."""
         self.backend: str = str(type(backend)).lower()
-        self.subprocess: PopenLike = backend.play(name)
+        self.subprocess: PopenLike = backend.play(name, volume)
 
         if block:
             self.wait()
@@ -309,6 +337,7 @@ class Sound:
 
 def playsound(
     sound: str | Path,
+    volume: int | None = None,
     block: bool = True,
     backend: str | None = None,
 ) -> Sound:
@@ -316,6 +345,7 @@ def playsound(
 
     Args:
         sound: Path or URL of the sound file (string or pathlib.Path).
+        volume: An integer from 0 - 100 that determines the volume of the sound, can be None.
         block:
             - `True` (default): Wait until sound finishes playing.
             - `False`: Play sound in the background.
@@ -328,7 +358,9 @@ def playsound(
     backend = backend or DEFAULT_BACKEND
     if backend is None:
         raise PlaysoundException(_NO_BACKEND_MESSAGE)
-
+    if volume is not None and not (0 <= volume <= 100):
+        raise ValueError("Volume is out of bounds")
+        
     if isinstance(backend, str):
         if backend in _BACKEND_MAP:
             backend_obj = _BACKEND_MAP[backend]
@@ -342,7 +374,7 @@ def playsound(
         backend_obj = backend()
     else:
         raise PlaysoundException(f"invalid backend type '{type(backend)}'")
-    return Sound(path, block, backend_obj)
+    return Sound(path, volume, block, backend_obj)
 
 
 def _remove_cached_downloads(cache: dict[str, str]) -> None:

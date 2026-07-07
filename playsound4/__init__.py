@@ -1,8 +1,8 @@
 __license__ = "MIT"
-__version__ = "3.3.1"
-__author__ = "Szymon Mikler"
+__version__ = "4.0.0"
+__author__ = "Ogr1sh"
 
-from playsound3.playsound3 import (
+from playsound4.playsound4 import (
     AVAILABLE_BACKENDS,
     DEFAULT_BACKEND,
     PlaysoundException,

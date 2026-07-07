@@ -3,15 +3,16 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "playsound3"
+name = "playsound4"
 dynamic = ["version"]
 requires-python = ">=3.10"
 authors = [
+	{ name = "Ogr1sh", email = "github.com.basics678@passinbox.com" },
     { name = "Szymon Mikler", email = "sjmikler@gmail.com" },
     { name = "Taylor Marks", email = "taylor@marksfam.com" },
 ]
 maintainers = [
-    { name = "Szymon Mikler", email = "sjmikler@gmail.com" },
+    { name = "Ogr1sh", email = "github.com.basics678@passinbox.com" },
 ]
 description = "Cross-platform library to play audio files"
 readme = { file = "README.md", content-type = "text/markdown" }
@@ -38,9 +39,9 @@ dependencies = [
 ]
 
 [project.urls]
-Home = "https://github.com/sjmikler/playsound3"
-Issues = "https://github.com/sjmikler/playsound3/issues"
-Documentation = "https://github.com/sjmikler/playsound3/blob/main/README.md#quick-start"
+Home = "https://github.com/Ladididididideyo/playsound4"
+Issues = "https://github.com/Ladididididideyo/playsound4/issues"
+Documentation = "https://github.com/Ladididididideyo/playsound4/blob/main/README.md#quick-start"
 
 [project.optional-dependencies]
 dev = [
@@ -50,13 +51,13 @@ dev = [
 ]
 
 [tool.hatch.version]
-path = "playsound3/__init__.py"
+path = "playsound4/__init__.py"
 
 [tool.hatch.build.targets.sdist]
-include = ["playsound3", "README.md", "tests"]
+include = ["playsound4", "README.md", "tests"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["playsound3"]
+packages = ["playsound4"]
 
 ##################################
 ## Formatting and testing tools ##

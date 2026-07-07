@@ -71,7 +71,7 @@ jobs:
 
       - name: Check available backends
         run: |
-          python -c "import playsound3; print(playsound3.AVAILABLE_BACKENDS)"
+          python -c "import playsound4; print(playsound4.AVAILABLE_BACKENDS)"
 
       - name: Test with pytest
         run: |

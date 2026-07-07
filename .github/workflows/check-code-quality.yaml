@@ -29,5 +29,5 @@ jobs:
       - name: Run ruff formatting
         run: ruff format . --check
       - name: Run pyright
-        run: pyright playsound3
+        run: pyright playsound4
 

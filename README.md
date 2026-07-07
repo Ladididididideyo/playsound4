@@ -1,13 +1,19 @@
-> **Version 3.0.0**
+> **Version 4.0.0**
 >
 > New functionalities:
-> * stop sounds by calling `sound.stop()`
-> * check if sound is still playing with `sound.is_alive()`
+> * New parameter to control volume
 
-# playsound3
+# playsound4
 
-[![PyPi version](https://img.shields.io/badge/dynamic/json?label=latest&query=info.version&url=https%3A%2F%2Fpypi.org%2Fpypi%2Fplaysound3%2Fjson)](https://pypi.org/project/playsound3)
-[![PyPI license](https://img.shields.io/badge/dynamic/json?label=license&query=info.license&url=https%3A%2F%2Fpypi.org%2Fpypi%2Fplaysound3%2Fjson)](https://pypi.org/project/playsound3)
+playsound4 is a fork of playsound3 that adds native volume control while maintaining the same simple API.
+
+## Features
+
+- Cross-platform audio playback
+- Pure Python
+- Volume control (0-100)
+- Blocking and non-blocking playback
+- Compatible with existing playsound3 code
 
 Cross platform library to play sound files in Python.
 
@@ -16,7 +22,7 @@ Cross platform library to play sound files in Python.
 Install via pip:
 
 ```
-pip install playsound3
+pip install playsound4
 ```
 
 ## Quick Start
@@ -24,13 +30,13 @@ pip install playsound3
 After installation, playing sounds is simple:
 
 ```python
-from playsound3 import playsound
+from playsound4 import playsound
 
 # Play sounds from disk
 playsound("/path/to/sound/file.mp3")
 
 # or play sounds from the internet.
-playsound("http://url/to/sound/file.mp3")
+playsound("http://url/to/sound/file.mp3", volume=50)
 
 # You can play sounds in the background
 sound = playsound("/path/to/sound/file.mp3", block=False)
@@ -50,6 +56,7 @@ sound.stop()
 ```python
 def playsound(
     sound: str | Path,
+	volume: int | None = None,
     block: bool = True,
     backend: str | None = None,
 ) -> Sound
@@ -68,7 +75,7 @@ If `None`, the best backend is determined automatically.
 To see a list of backends supported by your system:
 
 ```python
-from playsound3 import AVAILABLE_BACKENDS, DEFAULT_BACKEND
+from playsound4 import AVAILABLE_BACKENDS, DEFAULT_BACKEND
 
 print(AVAILABLE_BACKENDS)  # for example: ["gstreamer", "ffmpeg", ...]
 print(DEFAULT_BACKEND)  # for example: "gstreamer"
