@@ -116,8 +116,7 @@ To see an exhaustive list of extensions supported by a backend, refer to their r
 
 ## Fork information
 
-This repository was originally forked from [playsound](https://github.com/TaylorSMarks/playsound) library created by Taylor Marks.
-The original library is not maintained anymore and doesn't accept pull requests.
-This library is a major rewrite of its original.
+This repository was originally forked from [playsound3](https://github.com/szmikler/playsound3) library created by Szymon Mikler.
+This library is a rewrite of its original.
 
-Feel free to create an issue or contribute to `playsound3`!
+Feel free to create an issue or contribute to `playsound4`!
