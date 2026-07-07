@@ -140,7 +140,11 @@ class Gstreamer(SoundBackend):
 
     def play(self, sound: str, volume: int | None = None) -> subprocess.Popen[str]:
         if volume is not None:
-            return run_as_subprocess(["gst-play-1.0", f"--volume {float(volume)/100}", "--no-interactive", "--quiet", sound])
+            return run_as_subprocess(["gst-play-1.0",
+            "--volume",
+            f"{float(volume)/100}",
+            "--no-interactive", 
+            "--quiet", sound])
         return run_as_subprocess(["gst-play-1.0", "--no-interactive", "--quiet", sound])
 
 
@@ -184,7 +188,12 @@ class Alsa(SoundBackend):
             return aplay_process
         elif suffix == ".mp3":
             if volume is not None:
-                run_as_subprocess(["mpg123", "-q", f"-f {int(float(volume) * (32768 / 100))}", sound], stdin=self.pty_master)
+                run_as_subprocess(["mpg123",
+                "-q",
+                "-f",
+                f"{int(float(volume) * (32768 / 100))}", 
+                sound], 
+                stdin=self.pty_master)
             return run_as_subprocess(["mpg123", "-q", sound], stdin=self.pty_master)
         else:
             raise PlaysoundException(f"ALSA does not support for {suffix} files.")
@@ -202,7 +211,14 @@ class Ffplay(SoundBackend):
 
     def play(self, sound: str, volume: int | None = None) -> subprocess.Popen[str]:
         if volume is Not None:
-            return run_as_subprocess(["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", f"-volume {volume}", sound])
+            return run_as_subprocess(["ffplay",
+            "-nodisp",
+            "-autoexit",
+            "-loglevel",
+            "quiet",
+            "-volume",
+            f"{volume}",
+            sound])
         return run_as_subprocess(["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", sound])
 
 
@@ -253,7 +269,10 @@ class Afplay(SoundBackend):
 
     def play(self, sound: str, volume: int | None = None) -> subprocess.Popen[str]:
         if volume is not None:
-            return run_as_subprocess(["afplay", f"-v {float(volume)/100}", sound])
+            return run_as_subprocess(["afplay",
+            "-v",
+            f"{float(volume)/100}",
+            sound])
         return run_as_subprocess(["afplay", sound])
 
 
