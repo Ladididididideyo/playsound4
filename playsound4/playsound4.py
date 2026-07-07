@@ -183,7 +183,7 @@ class Alsa(SoundBackend):
                         subprocess.run(["pactl", "set-sink-input-volume", sink_input_id, f"{volume}%"])
                         return aplay_process
                 except Exception as exception:
-                    print(f"Exception occured when trying to change a .wav file's volume using ALSA: {e}")
+                    print(f"Exception occured when trying to change a .wav file's volume using ALSA: {exception}")
                     return aplay_process
             
             return aplay_process
